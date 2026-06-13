@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fábrica Idle Incremental</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+</head>
+<body>
+
+    <div class="painel-ui">
+        
+        <details class="categoria" style="margin-bottom: 15px;">
+            <summary>⚙️ Sistema</summary>
+            <button class="btn-maquina" style="text-align: center; border-color: #3498db;" onclick="salvarJogo()">💾 Salvar Jogo</button>
+            <button class="btn-maquina" style="text-align: center; border-color: #2ecc71;" onclick="carregarJogo()">📂 Carregar Save</button>
+            <button class="btn-maquina" style="text-align: center; border-color: #e74c3c; margin-top: 10px;" onclick="resetarJogo()">⚠️ Apagar Save</button>
+        </details>
+
+        <div id="display-energia">
+            ⚡ Energia: <span id="texto-energia">0 / 0</span>
+        </div>
+
+        <div class="abas-nav">
+            <button id="aba-btn-construir" class="aba-btn ativo" onclick="mudarAba('construir')">🔨 Construir</button>
+            <button id="aba-btn-inventario" class="aba-btn" onclick="mudarAba('inventario')">📦 Inventário</button>
+        </div>
+
+        <div id="aba-construir" class="aba-conteudo ativo">
+            
+            <details class="categoria">
+                <summary>🛠️ Ferramentas</summary>
+                <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                    <button class="btn-maquina" id="btn-ferramenta_remover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_remover')">🗑️ Remover</button>
+                    <button class="btn-maquina" id="btn-ferramenta_mover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_mover')">📦 Mover</button>
+                </div>
+            </details>
+
+            <details class="categoria">
+                <summary>⚡ Energia</summary>
+                <button class="btn-maquina" id="btn-gerador_carvao" onclick="selecionarConstrucao('gerador_carvao')">
+                    <div class="btn-titulo">🏭 Gerador a Carvão</div>
+                    <div class="btn-info">💰 25 🛡️ | 25 🔌<br>⚡ Gera: +50<br>♻️ Consome: 15 🪨/min</div>
+                </button>
+            </details>
+
+            <details class="categoria">
+                <summary>⛏️ Extração</summary>
+                <details class="subcategoria">
+                    <summary>Mineradoras</summary>
+                    <button class="btn-maquina" id="btn-mineradora_carvao" onclick="selecionarConstrucao('mineradora_carvao')">
+                        <div class="btn-titulo">⛏️ Mineradora de Carvão</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ Produz: 60 🪨/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-mineradora_cobre" onclick="selecionarConstrucao('mineradora_cobre')">
+                        <div class="btn-titulo">⛏️ Mineradora de Cobre</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ Produz: 60 🟠/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-mineradora_ferro" onclick="selecionarConstrucao('mineradora_ferro')">
+                        <div class="btn-titulo">⛏️ Mineradora de Ferro</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ Produz: 60 🪙/min</div>
+                    </button>
+                </details>
+            </details>
+
+            <details class="categoria">
+                <summary>🏭 Produção</summary>
+                <details class="subcategoria">
+                    <summary>Fornalhas</summary>
+                    <button class="btn-maquina" id="btn-fornalha_ferro" onclick="selecionarConstrucao('fornalha_ferro')">
+                        <div class="btn-titulo">🔥 Fornalha (Lingote de Ferro)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 30 🪙/min ➔ 30 🧱/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-fornalha_cobre" onclick="selecionarConstrucao('fornalha_cobre')">
+                        <div class="btn-titulo">🔥 Fornalha (Lingote de Cobre)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 30 🟠/min ➔ 30 🟧/min</div>
+                    </button>
+                </details>
+
+                <details class="subcategoria">
+                    <summary>Fundição</summary>
+                    <button class="btn-maquina trancado" id="btn-fundicao_aco" onclick="selecionarConstrucao('fundicao_aco')">
+                        <div class="btn-titulo">🌋 Fundição (Lingote de Aço)</div>
+                        <div class="btn-info">💰 20 🛡️ | ⚡ -10<br>♻️ 15 🪙 + 15 🪨/min ➔ 30 🦾/min</div>
+                    </button>
+                </details>
+
+                <details class="subcategoria">
+                    <summary>Montadoras</summary>
+                    <button class="btn-maquina" id="btn-montadora_ferro" onclick="selecionarConstrucao('montadora_ferro')">
+                        <div class="btn-titulo">⚙️ Montadora (Chapa de Ferro)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 30 🧱/min ➔ 30 🛡️/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-montadora_barra" onclick="selecionarConstrucao('montadora_barra')">
+                        <div class="btn-titulo">⚙️ Montadora (Barra de Ferro)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 15 🧱/min ➔ 30 📏/min</div>
+                    </button>
+                    <button class="btn-maquina trancado" id="btn-montadora_parafuso" onclick="selecionarConstrucao('montadora_parafuso')">
+                        <div class="btn-titulo">⚙️ Montadora (Parafusos)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 15 🧱/min ➔ 30 🔩/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-montadora_cobre" onclick="selecionarConstrucao('montadora_cobre')">
+                        <div class="btn-titulo">⚙️ Montadora (Chapa de Cobre)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 30 🟧/min ➔ 30 🔌/min</div>
+                    </button>
+                    <button class="btn-maquina" id="btn-montadora_fio" onclick="selecionarConstrucao('montadora_fio')">
+                        <div class="btn-titulo">⚙️ Montadora (Fio de Cobre)</div>
+                        <div class="btn-info">💰 10 🛡️ | ⚡ -5<br>♻️ 15 🟧/min ➔ 15 🧵/min</div>
+                    </button>
+                    <button class="btn-maquina trancado" id="btn-montadora_cabo" onclick="selecionarConstrucao('montadora_cabo')">
+                        <div class="btn-titulo">⚙️ Montadora (Cabo Elétrico)</div>
+                        <div class="btn-info">💰 15 🛡️ | ⚡ -5<br>♻️ 60 🧵/min ➔ 30 🪢/min</div>
+                    </button>
+                    <button class="btn-maquina trancado" id="btn-montadora_aco" onclick="selecionarConstrucao('montadora_aco')">
+                        <div class="btn-titulo">⚙️ Montadora (Chapa de Aço)</div>
+                        <div class="btn-info">💰 15 🛡️ | ⚡ -5<br>♻️ 30 🦾/min ➔ 15 🔳/min</div>
+                    </button>
+                    <button class="btn-maquina trancado" id="btn-montadora_reforcada" onclick="selecionarConstrucao('montadora_reforcada')">
+                        <div class="btn-titulo">⚙️ Mont. (Chapa Reforçada)</div>
+                        <div class="btn-info">💰 20 🛡️ | ⚡ -5<br>♻️ 60 🔩 + 30 🛡️/min ➔ 5 🔰/min</div>
+                    </button>
+                </details>
+            </details>
+
+            <p class="dica">Dir: Limpar Mão</p>
+
+            <div class="controles-sanfona">
+                <button class="btn-sanfona" onclick="expandirTudo()">▼ Expandir Tudo</button>
+                <button class="btn-sanfona" onclick="recolherTudo()">▲ Recolher Tudo</button>
+            </div>
+
+        </div>
+
+        <div id="aba-inventario" class="aba-conteudo">
+            <div id="lista-inventario"></div>
+        </div>
+    </div>
+
+    <canvas id="telaDoJogo"></canvas>
+
+    <div class="painel-ui">
+        
+        <button class="btn-venda destaque-pesquisa" onclick="abrirArvore()">🚀 Árvore de Pesquisa</button>
+
+        <div id="display-pesquisa">
+            🔬 Pontos de Pesquisa<br>
+            <span class="cor-verde" id="texto-pesq-verde">0</span> 🟢 | 
+            <span class="cor-vermelha" id="texto-pesq-vermelha">0</span> 🔴
+        </div>
+
+        <h2>🔬 Central de Dados</h2>
+        <hr>
+
+        <details class="categoria">
+            <summary>🗺️ Melhorias</summary>
+            <div class="card-venda" style="margin-top: 5px;">
+                <div class="venda-titulo">Expandir Terreno</div>
+                <div class="venda-botoes" style="flex-direction: column; gap: 8px; margin-top: 10px;">
+                    <button class="btn-venda destaque-verde" onclick="comprarExpansao('verde')">+1 Bloco (50 🟢)</button>
+                    <button class="btn-venda destaque-vermelho" onclick="comprarExpansao('vermelho')">+5 Blocos (50 🔴)</button>
+                </div>
+            </div>
+        </details>
+
+        <details class="categoria">
+            <summary>🟢 Gerar Pesquisa Básica</summary>
+            <div class="card-venda" style="margin-top: 5px;">
+                <div class="venda-titulo">📏 Barra de Ferro</div><div class="venda-preco">Rende: 2 🟢/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('barra_ferro', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('barra_ferro', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('barra_ferro', 10)">10x</button>
+                    <button class="btn-venda destaque-verde" onclick="gerarPesquisa('barra_ferro', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda trancado" id="card-venda-parafuso">
+                <div class="venda-titulo">🔩 Parafusos</div><div class="venda-preco">Rende: 2 🟢/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('parafuso', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('parafuso', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('parafuso', 10)">10x</button>
+                    <button class="btn-venda destaque-verde" onclick="gerarPesquisa('parafuso', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda">
+                <div class="venda-titulo">🧵 Fio de Cobre</div><div class="venda-preco">Rende: 2 🟢/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('fio_cobre', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('fio_cobre', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('fio_cobre', 10)">10x</button>
+                    <button class="btn-venda destaque-verde" onclick="gerarPesquisa('fio_cobre', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda">
+                <div class="venda-titulo">🛡️ Chapa de Ferro</div><div class="venda-preco">Rende: 1 🟢/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_ferro', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_ferro', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_ferro', 10)">10x</button>
+                    <button class="btn-venda destaque-verde" onclick="gerarPesquisa('chapa_ferro', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda">
+                <div class="venda-titulo">🔌 Chapa de Cobre</div><div class="venda-preco">Rende: 1 🟢/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_cobre', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_cobre', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_cobre', 10)">10x</button>
+                    <button class="btn-venda destaque-verde" onclick="gerarPesquisa('chapa_cobre', 'tudo')">Tudo</button>
+                </div>
+            </div>
+        </details>
+
+        <details class="categoria">
+            <summary>🔴 Gerar Pesquisa Avançada</summary>
+
+            <div class="card-venda trancado" id="card-venda-reforcada">
+                <div class="venda-titulo">🔰 Chapa Reforçada</div><div class="venda-preco">Rende: 4 🔴/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_reforcada', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_reforcada', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_reforcada', 10)">10x</button>
+                    <button class="btn-venda destaque-vermelho" onclick="gerarPesquisa('chapa_reforcada', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda trancado" id="card-venda-chapa_aco">
+                <div class="venda-titulo">🔳 Chapa de Aço</div><div class="venda-preco">Rende: 2 🔴/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_aco', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_aco', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('chapa_aco', 10)">10x</button>
+                    <button class="btn-venda destaque-vermelho" onclick="gerarPesquisa('chapa_aco', 'tudo')">Tudo</button>
+                </div>
+            </div>
+            <div class="card-venda trancado" id="card-venda-cabo_eletrico">
+                <div class="venda-titulo">🪢 Cabo Elétrico</div><div class="venda-preco">Rende: 1 🔴/un</div>
+                <div class="venda-botoes">
+                    <button class="btn-venda" onclick="gerarPesquisa('cabo_eletrico', 1)">1x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('cabo_eletrico', 5)">5x</button>
+                    <button class="btn-venda" onclick="gerarPesquisa('cabo_eletrico', 10)">10x</button>
+                    <button class="btn-venda destaque-vermelho" onclick="gerarPesquisa('cabo_eletrico', 'tudo')">Tudo</button>
+                </div>
+            </div>
+        </details>
+
+    </div>
+
+    <div id="modal-arvore" class="escondido">
+        <button id="btn-fechar-arvore" onclick="fecharArvore()">❌ Fechar</button>
+        <h1>🚀 Árvore de Pesquisa Tecnológica</h1>
+        <div id="display-pesquisa-modal">
+            Temos: <span class="cor-verde" id="modal-verde">0</span> 🟢 | <span class="cor-vermelha" id="modal-vermelha">0</span> 🔴
+        </div>
+
+        <div class="arvore-flex" id="container-arvore-nodes"></div>
+    </div>
+
+    <div id="tooltip-maquina" class="escondido"></div>
+    <div id="container-notificacoes"></div>
+
+    <script src="game.js"></script>
+</body>
+</html>
