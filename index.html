@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Idle Factory</title>
+    <title>Fábrica Idle Incremental</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
 </head>
 <body>
 
-    <img id="logo-jogo" src="assets/logo.png" alt="Idle Factory">
+    <img id="logo-jogo" src="assets/logo.png" alt="Título do Jogo">
 
     <div class="jogo-container">
 
         <div class="painel-ui">
             
-            <details class="categoria" style="margin-bottom: 15px;">
-                <summary>Sistema</summary>
-                <button class="btn-maquina" style="text-align: center; border-color: #3498db;" onclick="salvarJogo()">Salvar Jogo</button>
-                <button class="btn-maquina" style="text-align: center; border-color: #2ecc71;" onclick="carregarJogo()">Carregar Save</button>
-                <button class="btn-maquina" style="text-align: center; border-color: #e74c3c; margin-top: 10px;" onclick="resetarJogo()">Apagar Save</button>
-            </details>
-
             <div id="display-energia">
                 Energia: <span id="texto-energia">0 / 0</span>
             </div>
@@ -145,7 +138,17 @@
 
         <div class="painel-ui">
             
-            <button class="btn-venda destaque-pesquisa" onclick="abrirArvore()">Árvore de Pesquisa</button>
+            <div class="botoes-topo-direita">
+                <button class="btn-quadrado" title="Sistema" onclick="abrirSistema()">
+                    <img src="assets/icon-sistema.png" alt="Sistema" class="icone-btn-quadrado">
+                </button>
+                <button class="btn-quadrado" title="Como Jogar" onclick="abrirComoJogar()">
+                    <img src="assets/icon-ajuda.png" alt="Como Jogar" class="icone-btn-quadrado">
+                </button>
+                <button class="btn-quadrado pesquisa" title="Árvore de Pesquisa" onclick="abrirArvore()">
+                    <img src="assets/icon-pesquisa.png" alt="Árvore de Pesquisa" class="icone-btn-quadrado">
+                </button>
+            </div>
 
             <div id="display-pesquisa">
                 Pontos de Pesquisa<br>
@@ -251,13 +254,55 @@
 
         </div>
     </div> <div id="modal-arvore" class="escondido">
-        <button id="btn-fechar-arvore" onclick="fecharArvore()">Fechar</button>
+        <button class="btn-fechar-modal" onclick="fecharArvore()">Fechar</button>
         <h1>Árvore de Pesquisa Tecnológica</h1>
         <div id="display-pesquisa-modal">
             Temos: <span class="cor-verde" id="modal-verde">0</span> <img src="assets/research-green.png" class="icone-texto"> | <span class="cor-vermelha" id="modal-vermelha">0</span> <img src="assets/research-red.png" class="icone-texto">
         </div>
-
         <div class="arvore-flex" id="container-arvore-nodes"></div>
+    </div>
+
+    <div id="modal-como-jogar" class="escondido">
+        <button class="btn-fechar-modal" onclick="fecharComoJogar()">Fechar</button>
+        <h1>Como Jogar</h1>
+        
+        <div class="como-jogar-flex">
+            <div class="coluna-tutorial">
+                <img src="assets/logo.png" class="tutorial-img" alt="Tutorial 1">
+                <div class="tutorial-titulo">Geração de Recursos</div>
+                <p class="tutorial-texto">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin elementum hendrerit massa, vitae scelerisque ante. Sed tempus erat vel purus eleifend.</p>
+            </div>
+            
+            <div class="coluna-tutorial">
+                <img src="assets/logo.png" class="tutorial-img" alt="Tutorial 2">
+                <div class="tutorial-titulo">Gerenciamento de Energia</div>
+                <p class="tutorial-texto">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin elementum hendrerit massa, vitae scelerisque ante. Sed tempus erat vel purus eleifend.</p>
+            </div>
+            
+            <div class="coluna-tutorial">
+                <img src="assets/logo.png" class="tutorial-img" alt="Tutorial 3">
+                <div class="tutorial-titulo">Pesquisa e Expansão</div>
+                <p class="tutorial-texto">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin elementum hendrerit massa, vitae scelerisque ante. Sed tempus erat vel purus eleifend.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-sistema" class="escondido">
+        <button class="btn-fechar-modal" onclick="fecharSistema()">Fechar</button>
+        <h1>Sistema</h1>
+        
+        <div class="menu-sistema-flex">
+            <button class="btn-venda destaque-pesquisa" style="background-color: #3498db; border-color: #2980b9;" onclick="salvarJogo()">Salvar Jogo</button>
+            <button class="btn-venda destaque-pesquisa" style="background-color: #2ecc71; border-color: #27ae60;" onclick="carregarJogo()">Carregar Save</button>
+            <button class="btn-venda destaque-pesquisa" style="background-color: #e74c3c; border-color: #c0392b;" onclick="resetarJogo()">Apagar Save</button>
+            
+            <hr style="width: 100%; border-color: #555; margin: 15px 0;">
+            
+            <div class="controle-volume">
+                <label for="volume-musica" style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: block;">Volume</label>
+                <input type="range" id="volume-musica" min="0" max="100" value="50" style="width: 100%; cursor: pointer;">
+            </div>
+        </div>
     </div>
 
     <div id="tooltip-maquina" class="escondido"></div>
