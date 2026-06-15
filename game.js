@@ -1,5 +1,5 @@
 // ==========================================
-// 1. TEMPLATES E DADOS 
+// 1. TEMPLATES E DADOS
 // ==========================================
 
 const ITENS = {
@@ -61,7 +61,7 @@ const MAQUINAS = {
 };
 
 // ==========================================
-// 2. SISTEMA DE ÁRVORE DE PESQUISA 
+// 2. SISTEMA DE ÁRVORE DE PESQUISA E MODAIS
 // ==========================================
 
 const ARVORE_PESQUISA = {
@@ -84,6 +84,13 @@ function abrirArvore() {
     renderizarArvore();
 }
 function fecharArvore() { document.getElementById("modal-arvore").classList.add("escondido"); }
+
+function abrirComoJogar() { document.getElementById("modal-como-jogar").classList.remove("escondido"); }
+function fecharComoJogar() { document.getElementById("modal-como-jogar").classList.add("escondido"); }
+
+// NOVO: Funções do modal Sistema
+function abrirSistema() { document.getElementById("modal-sistema").classList.remove("escondido"); }
+function fecharSistema() { document.getElementById("modal-sistema").classList.add("escondido"); }
 
 function renderizarArvore() {
     const container = document.getElementById("container-arvore-nodes");
@@ -162,7 +169,7 @@ function mostrarNotificacao(mensagem, tipo = "erro") {
     const container = document.getElementById("container-notificacoes");
     const notif = document.createElement("div");
     notif.className = `notificacao ${tipo}`;
-    notif.innerHTML = mensagem; // Alterado para innerHTML para suportar ícones nas notificações
+    notif.innerHTML = mensagem;
     container.appendChild(notif);
     setTimeout(() => { notif.classList.add("sumindo"); setTimeout(() => notif.remove(), 400); }, 3000);
 }
@@ -360,6 +367,8 @@ canvasDOM.addEventListener("contextmenu", evento => evento.preventDefault());
 
 canvasDOM.addEventListener("mousedown", (evento) => {
     if (!document.getElementById("modal-arvore").classList.contains("escondido")) return;
+    if (!document.getElementById("modal-como-jogar").classList.contains("escondido")) return;
+    if (!document.getElementById("modal-sistema").classList.contains("escondido")) return; // NOVO: Bloqueia grade com sistema aberto
 
     const rect = canvasDOM.getBoundingClientRect();
     const col = Math.floor((evento.clientX - rect.left) / TAMANHO_CELULA);
@@ -518,4 +527,7 @@ app.ticker.add((delta) => {
 });
 
 setInterval(() => { salvarJogo(true); }, 30000);
-window.onload = () => { if (localStorage.getItem('meu_save_fabrica_final')) { carregarJogo(true); } };
+
+window.onload = () => { 
+    if (localStorage.getItem('meu_save_fabrica_final')) { carregarJogo(true); } 
+};
