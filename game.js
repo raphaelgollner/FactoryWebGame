@@ -623,10 +623,10 @@ app.ticker.add((delta) => {
                 visual.imgSprite.texture = textura;
                 
                 // Força as imagens 64x64 das máquinas a terem um tamanho bom no novo terreno
-                if (textura.width > 1) { 
-                    visual.imgSprite.width = 160;   // Aumentado para 160
-                    visual.imgSprite.height = 160;  // Aumentado para 160
-                }
+               // if (textura.width > 1) { 
+               //     visual.imgSprite.width = 160;   // Aumentado para 160
+               //     visual.imgSprite.height = 160;  // Aumentado para 160
+               // }
                 
                 visual.imgSprite.alpha = maquina.ligada ? 1.0 : 0.4;
                 visual.imgSprite.visible = true; visual.barraFundo.visible = true;
