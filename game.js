@@ -50,35 +50,54 @@ const INVENTARIO_INICIAL = {
 let inventario = { ...INVENTARIO_INICIAL };
 
 const PRECOS_PESQUISA = { 
-    chapa_ferro: { tipo: 'verde', valor: 1 }, 
-    chapa_cobre: { tipo: 'verde', valor: 1 }, 
-    barra_ferro: { tipo: 'verde', valor: 2 },
-    parafuso: { tipo: 'verde', valor: 2 }, 
-    fio_cobre: { tipo: 'verde', valor: 2 },
-    cabo_eletrico: { tipo: 'vermelha', valor: 1 },
-    chapa_aco: { tipo: 'vermelha', valor: 2 }, 
-    chapa_reforcada: { tipo: 'vermelha', valor: 4 }
+    chapa_ferro: { tipo: 'verde', valor: 1 }, chapa_cobre: { tipo: 'verde', valor: 1 }, 
+    barra_ferro: { tipo: 'verde', valor: 2 }, parafuso: { tipo: 'verde', valor: 2 }, 
+    fio_cobre: { tipo: 'verde', valor: 2 }, cabo_eletrico: { tipo: 'vermelha', valor: 1 },
+    chapa_aco: { tipo: 'vermelha', valor: 2 }, chapa_reforcada: { tipo: 'vermelha', valor: 4 }
 };
 
 let energiaGerada = 0;
 let energiaConsumida = 0;
 
+// ==========================================
+// CONFIGURAÇÃO DAS MÁQUINAS (SPRITE SHEETS)
+// ==========================================
+// Caso você ainda não tenha o sprite animado para uma máquina, 
+// basta deixar "framesAnimacao: 0" que o jogo usará a imagem fixa normalmente.
+
 const MAQUINAS = {
-    gerador_carvao: { nome: "Gerador a Carvão", imagem: "assets/coal-generator.png", tempoCiclo: 4000, custo: { chapa_ferro: 25, chapa_cobre: 25 }, entrada: { carvao: 1 }, saida: {}, geraEnergia: 50, textoInspecao: "Gera: 50 Energia<br>Usa: 15 / min" },
-    mineradora_carvao: { nome: "Mineradora (Carvão)", imagem: "assets/miner.png", tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { carvao: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
-    mineradora_cobre: { nome: "Mineradora (Cobre)", imagem: "assets/miner.png", tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { minerio_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
-    mineradora_ferro: { nome: "Mineradora (Ferro)", imagem: "assets/miner.png", tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { minerio_ferro: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
-    fornalha_ferro: { nome: "Fornalha (Ferro)", imagem: "assets/smelter.png", tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { minerio_ferro: 1 }, saida: { lingote_ferro: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    fornalha_cobre: { nome: "Fornalha (Cobre)", imagem: "assets/smelter.png", tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { minerio_cobre: 1 }, saida: { lingote_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    fundicao_aco: { nome: "Fundição (Aço)", imagem: "assets/fundicao.png", tempoCiclo: 4000, custo: { chapa_ferro: 20 }, entrada: { minerio_ferro: 1, carvao: 1 }, saida: { lingote_aco: 2 }, consomeEnergia: 10, textoInspecao: "Entra: 15+15 / min<br>Sai: 30 / min<br>Usa: 10 Energia" },
-    montadora_ferro: { nome: "Mont. (Chapa Ferro)", imagem: "assets/montadora.png", tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { chapa_ferro: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    montadora_barra: { nome: "Mont. (Barra Ferro)", imagem: "assets/montadora.png", tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { barra_ferro: 2 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    montadora_parafuso: { nome: "Mont. (Parafusos)", imagem: "assets/montadora.png", tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { parafuso: 2 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    montadora_cobre: { nome: "Mont. (Chapa Cobre)", imagem: "assets/montadora.png", tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { lingote_cobre: 1 }, saida: { chapa_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    montadora_fio: { nome: "Mont. (Fio Cobre)", imagem: "assets/montadora.png", tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_cobre: 1 }, saida: { fio_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 15 / min<br>Usa: 5 Energia" },
-    montadora_cabo: { nome: "Mont. (Cabo Elétrico)", imagem: "assets/montadora.png", tempoCiclo: 2000, custo: { chapa_ferro: 15 }, entrada: { fio_cobre: 2 }, saida: { cabo_eletrico: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 60 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
-    montadora_aco: { nome: "Mont. (Chapa Aço)", imagem: "assets/montadora.png", tempoCiclo: 4000, custo: { chapa_ferro: 15 }, entrada: { lingote_aco: 2 }, saida: { chapa_aco: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 15 / min<br>Usa: 5 Energia" },
-    montadora_reforcada: { nome: "Mont. (Reforçada)", imagem: "assets/montadora.png", tempoCiclo: 12000, custo: { chapa_ferro: 20 }, entrada: { parafuso: 12, chapa_ferro: 6 }, saida: { chapa_reforcada: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 60+30 / min<br>Sai: 5 / min<br>Usa: 5 Energia" }
+    gerador_carvao: { 
+        nome: "Gerador a Carvão", 
+        imagem: "assets/gerador-sheet.png", // Seu arquivo .png comprido com 8 geradores colados
+        framesAnimacao: 8,                  // Quantidade de geradores desenhados na imagem
+        frameLargura: 128,                  // A largura de apenas UM gerador
+        frameAltura: 134,                   // A altura da imagem (134px como você disse)
+        tempoCiclo: 4000, custo: { chapa_ferro: 25, chapa_cobre: 25 }, entrada: { carvao: 1 }, saida: {}, 
+        geraEnergia: 50, textoInspecao: "Gera: 50 Energia<br>Usa: 15 / min" 
+    },
+    fornalha_ferro: { 
+        nome: "Fornalha (Ferro)", 
+        imagem: "assets/fornalha-sheet.png", // A imagem da fornalha
+        framesAnimacao: 7,                   // A imagem que mandou tem 7 frames
+        frameLargura: 128,                   // Largura de uma fornalha
+        frameAltura: 134,                    // Altura da fornalha
+        tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { minerio_ferro: 1 }, saida: { lingote_ferro: 1 }, 
+        consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" 
+    },
+    // AS DEMAIS MÁQUINAS (Vou deixar como 0 frames para rodar a imagem fixa até você criá-las)
+    mineradora_carvao: { nome: "Mineradora (Carvão)", imagem: "assets/miner.png", framesAnimacao: 0, tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { carvao: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
+    mineradora_cobre: { nome: "Mineradora (Cobre)", imagem: "assets/miner.png", framesAnimacao: 0, tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { minerio_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
+    mineradora_ferro: { nome: "Mineradora (Ferro)", imagem: "assets/miner.png", framesAnimacao: 0, tempoCiclo: 1000, custo: { chapa_ferro: 10 }, entrada: {}, saida: { minerio_ferro: 1 }, consomeEnergia: 5, textoInspecao: "Produz: 60 / min<br>Usa: 5 Energia" },
+    fornalha_cobre: { nome: "Fornalha (Cobre)", imagem: "assets/smelter.png", framesAnimacao: 0, tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { minerio_cobre: 1 }, saida: { lingote_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    fundicao_aco: { nome: "Fundição (Aço)", imagem: "assets/fundicao.png", framesAnimacao: 0, tempoCiclo: 4000, custo: { chapa_ferro: 20 }, entrada: { minerio_ferro: 1, carvao: 1 }, saida: { lingote_aco: 2 }, consomeEnergia: 10, textoInspecao: "Entra: 15+15 / min<br>Sai: 30 / min<br>Usa: 10 Energia" },
+    montadora_ferro: { nome: "Mont. (Chapa Ferro)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { chapa_ferro: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    montadora_barra: { nome: "Mont. (Barra Ferro)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { barra_ferro: 2 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    montadora_parafuso: { nome: "Mont. (Parafusos)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_ferro: 1 }, saida: { parafuso: 2 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    montadora_cobre: { nome: "Mont. (Chapa Cobre)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 2000, custo: { chapa_ferro: 10 }, entrada: { lingote_cobre: 1 }, saida: { chapa_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    montadora_fio: { nome: "Mont. (Fio Cobre)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 4000, custo: { chapa_ferro: 10 }, entrada: { lingote_cobre: 1 }, saida: { fio_cobre: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 15 / min<br>Sai: 15 / min<br>Usa: 5 Energia" },
+    montadora_cabo: { nome: "Mont. (Cabo Elétrico)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 2000, custo: { chapa_ferro: 15 }, entrada: { fio_cobre: 2 }, saida: { cabo_eletrico: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 60 / min<br>Sai: 30 / min<br>Usa: 5 Energia" },
+    montadora_aco: { nome: "Mont. (Chapa Aço)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 4000, custo: { chapa_ferro: 15 }, entrada: { lingote_aco: 2 }, saida: { chapa_aco: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 30 / min<br>Sai: 15 / min<br>Usa: 5 Energia" },
+    montadora_reforcada: { nome: "Mont. (Reforçada)", imagem: "assets/montadora.png", framesAnimacao: 0, tempoCiclo: 12000, custo: { chapa_ferro: 20 }, entrada: { parafuso: 12, chapa_ferro: 6 }, saida: { chapa_reforcada: 1 }, consomeEnergia: 5, textoInspecao: "Entra: 60+30 / min<br>Sai: 5 / min<br>Usa: 5 Energia" }
 };
 
 const ARVORE_PESQUISA = {
@@ -111,7 +130,6 @@ function abrirOpcoes() {
     document.getElementById("modal-sistema").classList.remove("escondido");
 }
 function fecharSistema() { document.getElementById("modal-sistema").classList.add("escondido"); }
-
 function mudarEscalaJanela(fator) { document.body.style.zoom = fator; }
 
 function renderizarArvore() {
@@ -121,7 +139,8 @@ function renderizarArvore() {
     document.getElementById("modal-vermelha").innerText = inventario.pesquisa_vermelha;
 
     LAYOUT_ARVORE.forEach(coluna => {
-        const divColuna = document.createElement("div"); divColuna.className = "coluna-tech";
+        const divColuna = document.createElement("div");
+        divColuna.className = "coluna-tech";
         coluna.forEach(idNode => {
             const tech = ARVORE_PESQUISA[idNode];
             const divNode = document.createElement("div");
@@ -159,57 +178,6 @@ function comprarTecnologia(id) {
     } else { mostrarNotificacao("Pontos Insuficientes!"); }
 }
 
-// ==========================================
-// 3. SISTEMA DE TRANSIÇÃO E SAVES
-// ==========================================
-
-function entrarNaFabrica() {
-    jogoIniciadoAtivo = true;
-    document.getElementById("tela-titulo").classList.add("escondido");
-    document.getElementById("jogo-container-id").classList.remove("escondido");
-    atualizarInterfaceDOM(true); // Força atualização do inventário na hora que entra
-}
-
-function voltarAoMenu() {
-    salvarJogo(true);
-    jogoIniciadoAtivo = false;
-    document.getElementById("modal-sistema").classList.add("escondido");
-    document.getElementById("jogo-container-id").classList.add("escondido");
-    document.getElementById("tela-titulo").classList.remove("escondido");
-    const btnCarregar = document.getElementById("btn-menu-carregar");
-    if (btnCarregar) btnCarregar.disabled = !verificarSeExisteSave();
-}
-
-function iniciarNovoJogo() {
-    if (confirm("Deseja iniciar uma nova fábrica? Isso resetará o progresso atual não salvo.")) {
-        inventario = JSON.parse(JSON.stringify(INVENTARIO_INICIAL)); // Cópia limpa sem bugar memória
-        for (const key of Object.keys(ARVORE_PESQUISA)) {
-            ARVORE_PESQUISA[key].comprada = false;
-            ARVORE_PESQUISA[key].destravaDOM.forEach(idDOM => {
-                const el = document.getElementById(idDOM); if (el) el.classList.add("trancado");
-            });
-        }
-        for (let c = 0; c < COLUNAS; c++) {
-            for (let l = 0; l < LINHAS; l++) { 
-                mapa[c][l] = null; 
-                // Centraliza a área inicial 5x5 na nova grid isométrica 30x30
-                if (c >= 12 && c <= 16 && l >= 12 && l <= 16) { terrenoBloqueado[c][l] = false; } 
-                else { terrenoBloqueado[c][l] = true; }
-            }
-        }
-        entrarNaFabrica();
-        salvarJogo(true);
-        mostrarNotificacao("Nova fábrica inicializada!", "sucesso");
-    }
-}
-
-function carregarJogoMenu() {
-    if (carregarJogo(true)) {
-        entrarNaFabrica();
-        mostrarNotificacao("Save carregado com sucesso!", "sucesso");
-    }
-}
-
 function expandirTudo() { document.querySelectorAll('#aba-construir details').forEach(det => det.open = true); }
 function recolherTudo() { document.querySelectorAll('#aba-construir details').forEach(det => det.open = false); }
 function mudarAba(abaNome) {
@@ -237,6 +205,56 @@ function gerarPesquisa(item_id, quantity) {
         if (dadosPesquisa.tipo === 'verde') { inventario.pesquisa_verde += ganhoFinal; mostrarNotificacao(`+${ganhoFinal} Básica`, "sucesso"); } 
         else { inventario.pesquisa_vermelha += ganhoFinal; mostrarNotificacao(`+${ganhoFinal} Avançada`, "sucesso"); }
     } else { mostrarNotificacao(`Faltam itens!`); }
+}
+
+// ==========================================
+// 3. FLUXO DE JOGO E SAVES (FS)
+// ==========================================
+
+function entrarNaFabrica() {
+    jogoIniciadoAtivo = true;
+    document.getElementById("tela-titulo").classList.add("escondido");
+    document.getElementById("jogo-container-id").classList.remove("escondido");
+    atualizarInterfaceDOM(true); 
+}
+
+function voltarAoMenu() {
+    salvarJogo(true);
+    jogoIniciadoAtivo = false;
+    document.getElementById("modal-sistema").classList.add("escondido");
+    document.getElementById("jogo-container-id").classList.add("escondido");
+    document.getElementById("tela-titulo").classList.remove("escondido");
+    const btnCarregar = document.getElementById("btn-menu-carregar");
+    if (btnCarregar) btnCarregar.disabled = !verificarSeExisteSave();
+}
+
+function iniciarNovoJogo() {
+    if (confirm("Deseja iniciar uma nova fábrica? Isso apagará o progresso anterior.")) {
+        inventario = JSON.parse(JSON.stringify(INVENTARIO_INICIAL));
+        for (const key of Object.keys(ARVORE_PESQUISA)) {
+            ARVORE_PESQUISA[key].comprada = false;
+            ARVORE_PESQUISA[key].destravaDOM.forEach(idDOM => {
+                const el = document.getElementById(idDOM); if (el) el.classList.add("trancado");
+            });
+        }
+        for (let c = 0; c < COLUNAS; c++) {
+            for (let l = 0; l < LINHAS; l++) { 
+                mapa[c][l] = null; 
+                if (c >= 12 && c <= 16 && l >= 12 && l <= 16) { terrenoBloqueado[c][l] = false; } 
+                else { terrenoBloqueado[c][l] = true; }
+            }
+        }
+        entrarNaFabrica();
+        salvarJogo(true);
+        mostrarNotificacao("Nova fábrica inicializada!", "sucesso");
+    }
+}
+
+function carregarJogoMenu() {
+    if (carregarJogo(true)) {
+        entrarNaFabrica();
+        mostrarNotificacao("Save carregado com sucesso!", "sucesso");
+    }
 }
 
 function verificarSeExisteSave() {
@@ -318,31 +336,28 @@ function resetarJogo() {
 // 4. MOTOR ISOMÉTRICO (PIXIJS)
 // ==========================================
 
-const TILE_W = 256; 
-const TILE_H = 128;
+const TILE_W = 128; // Tamanho ideal da Grid 128x64
+const TILE_H = 64;
 const TILE_W_HALF = TILE_W / 2;
 const TILE_H_HALF = TILE_H / 2;
 const COLUNAS = 30; // Mapa massivo 30x30
 const LINHAS = 30;
 
+// Garante que o Pixel Art fique nítido e sem borrões
+PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
+
 const app = new PIXI.Application({
     view: document.getElementById("telaDoJogo"),
-    width: 720, 
-    height: 720,
-    backgroundColor: 0x111111, 
-    resolution: window.devicePixelRatio || 1, 
-    autoDensity: true 
+    width: 720, height: 720,
+    backgroundColor: 0x111111, resolution: window.devicePixelRatio || 1, autoDensity: true 
 });
 
 const mundo = new PIXI.Container();
 mundo.sortableChildren = true;
 app.stage.addChild(mundo);
-mundo.x = 360; // Centro horizontal da tela
-mundo.y = -1432; // Desce a câmera diretamente para a sua base inicial
 
-// Posição inicial da câmera para olhar para o centro exato do mapa (coluna 14, linha 14)
 mundo.x = 360; 
-mundo.y = -1432; // Desce a câmera diretamente para a sua base inicial
+mundo.y = -536; 
 
 let mapa = []; let terrenoBloqueado = []; let modoExpansaoAtivo = false; let tipoExpansao = null; let objetosVisuais = []; 
 
@@ -353,23 +368,24 @@ for (let c = 0; c < COLUNAS; c++) {
         if (c >= 12 && c <= 16 && l >= 12 && l <= 16) { terrenoBloqueado[c][l] = false; } else { terrenoBloqueado[c][l] = true; }
 
         const blocoContainer = new PIXI.Container();
-        // Mágica Isométrica 
         blocoContainer.x = (c - l) * TILE_W_HALF; 
         blocoContainer.y = (c + l) * TILE_H_HALF;
         blocoContainer.zIndex = c + l; 
         
         const fundo = PIXI.Sprite.from('assets/dirt.png');
         fundo.anchor.set(0.5, 0.5); 
+        // Forçamos o terreno a sempre respeitar a grade
+        fundo.width = TILE_W; 
+        fundo.height = TILE_H;
         blocoContainer.addChild(fundo);
         
         const imgSprite = new PIXI.Sprite();
-        // Ajuste no eixo Y para a máquina ficar perfeitamente "plantada" no chão
         imgSprite.anchor.set(0.5, 0.85); 
-        imgSprite.y = 20; 
+        imgSprite.y = 10; 
         blocoContainer.addChild(imgSprite);
 
         const barraFundo = new PIXI.Graphics();
-        barraFundo.beginFill(0x000000, 0.5); barraFundo.drawRect(-30, -80, 60, 6); barraFundo.endFill();
+        barraFundo.beginFill(0x000000, 0.5); barraFundo.drawRect(-30, -50, 60, 6); barraFundo.endFill();
         blocoContainer.addChild(barraFundo);
         const barraProgresso = new PIXI.Graphics(); blocoContainer.addChild(barraProgresso);
 
@@ -418,12 +434,9 @@ canvasDOM.addEventListener("mousedown", (evento) => {
             maquinaSelecionada = null; modoExpansaoAtivo = false; 
             document.querySelectorAll(".btn-maquina").forEach(btn => btn.classList.remove("selecionado"));
         } else {
-            // Inicia o arrasto da câmera com o botão direito
             isDraggingCamera = true;
-            dragStartX = evento.clientX;
-            dragStartY = evento.clientY;
-            cameraStartX = mundo.x;
-            cameraStartY = mundo.y;
+            dragStartX = evento.clientX; dragStartY = evento.clientY;
+            cameraStartX = mundo.x; cameraStartY = mundo.y;
         }
         return;
     }
@@ -433,21 +446,17 @@ canvasDOM.addEventListener("mousedown", (evento) => {
         const scaleX = canvasDOM.width / rect.width;
         const scaleY = canvasDOM.height / rect.height;
 
-        // Calcula a posição exata do clique compensando onde a câmera está
         const mouseX = ((evento.clientX - rect.left) * scaleX) - mundo.x;
         const mouseY = ((evento.clientY - rect.top) * scaleY) - mundo.y;
 
-        // MATEMÁTICA ISOMÉTRICA REVERSA PERFEITA (Converte o clique na tela para dentro do losango)
         let mapX = (mouseX / TILE_W_HALF + (mouseY + TILE_H_HALF) / TILE_H_HALF) / 2;
         let mapY = ((mouseY + TILE_H_HALF) / TILE_H_HALF - mouseX / TILE_W_HALF) / 2;
 
-        const col = Math.floor(mapX);
-        const lin = Math.floor(mapY);
+        const col = Math.floor(mapX); const lin = Math.floor(mapY);
         
         const tooltip = document.getElementById("tooltip-maquina");
         tooltip.classList.add("escondido");
 
-        // Se clicou fora da grade 30x30 ignora
         if (col < 0 || col >= COLUNAS || lin < 0 || lin >= LINHAS) return;
 
         if (modoExpansaoAtivo) {
@@ -467,7 +476,7 @@ canvasDOM.addEventListener("mousedown", (evento) => {
                         if (cand.length > 0) { let es = cand[Math.floor(Math.random() * cand.length)]; terrenoBloqueado[es.c][es.l] = false; qDesb--; } else { break; }
                     }
                     modoExpansaoAtivo = false; mostrarNotificacao("Terreno Expandido!", "sucesso");
-                } else { mostrarNotificacao("Escolha um bloco escuro que encoste na sua fábrica!"); }
+                } else { mostrarNotificacao("Escolha um bloco vizinho escuro!"); }
             } else { modoExpansaoAtivo = false; }
             return; 
         }
@@ -475,21 +484,27 @@ canvasDOM.addEventListener("mousedown", (evento) => {
         if (terrenoBloqueado[col][lin]) { mostrarNotificacao("Terreno Bloqueado pela Névoa!"); return; }
 
         if (maquinaSelecionada === "ferramenta_remover") {
-            if (mapa[col][lin]) { const mqD = mapa[col][lin].tipo; alterarInventario(MAQUINAS[mqD].custo, -1); mapa[col][lin] = null; mostrarNotificacao("Máquina Removida", "sucesso"); } return;
+            if (mapa[col][lin]) { const mqD = mapa[col][lin].tipo; alterarInventario(MAQUINAS[mqD].custo, -1); mapa[col][lin] = null; mostrarNotificacao("Máquina Removida", "sucesso"); atualizarInterfaceDOM(true); } return;
         }
         if (maquinaSelecionada === "ferramenta_mover") {
-            if (!maquinaNaMao && mapa[col][lin]) { maquinaNaMao = mapa[col][lin]; maquinaOrigemX = col; maquinaOrigemY = lin; mapa[col][lin] = null; mostrarNotificacao("Selecione o novo local"); } 
-            else if (maquinaNaMao && !mapa[col][lin]) { mapa[col][lin] = maquinaNaMao; maquinaNaMao = null; maquinaOrigemX = null; maquinaOrigemY = null; } 
+            if (!maquinaNaMao && mapa[col][lin]) { maquinaNaMao = mapa[col][lin]; maquinaOrigemX = col; maquinaOrigemY = lin; mapa[col][lin] = null; mostrarNotificacao("Selecione o novo local"); atualizarInterfaceDOM(true); } 
+            else if (maquinaNaMao && !mapa[col][lin]) { mapa[col][lin] = maquinaNaMao; maquinaNaMao = null; maquinaOrigemX = null; maquinaOrigemY = null; atualizarInterfaceDOM(true); } 
             else if (maquinaNaMao && mapa[col][lin]) { mostrarNotificacao("O destino está ocupado!"); } return;
         }
 
         if (maquinaSelecionada) {
             const custo = MAQUINAS[maquinaSelecionada].custo;
-            if (!mapa[col][lin]) { if (podePagar(custo)) { alterarInventario(custo, 1); mapa[col][lin] = new Maquina(maquinaSelecionada); } else { mostrarNotificacao("Materiais Insuficientes!"); } } else { mostrarNotificacao("Ocupado!"); }
+            if (!mapa[col][lin]) { 
+                if (podePagar(custo)) { 
+                    alterarInventario(custo, 1); 
+                    mapa[col][lin] = new Maquina(maquinaSelecionada); 
+                    atualizarInterfaceDOM(true); // FEEDBACK INSTANTÂNEO NA UI!
+                } else { mostrarNotificacao("Materiais Insuficientes!"); } 
+            } else { mostrarNotificacao("Ocupado!"); }
         } 
         else if (!maquinaSelecionada && mapa[col][lin]) {
             let maq = mapa[col][lin]; let ref = MAQUINAS[maq.tipo];
-            tooltip.innerHTML = `<div style="font-weight:bold; font-size:1.1em; margin-bottom: 8px; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 4px; display: flex; align-items: center; gap: 8px;"><img src="${ref.imagem}" width="24" height="24"> ${ref.nome}</div><div style="color: #ccc; margin-bottom: 8px;">${ref.textoInspecao}</div><div style="font-size: 0.9em; font-weight: bold; color: ${maq.ligada ? '#2ecc71' : '#e74c3c'}">Status: ${maq.ligada ? '<span style="color:#2ecc71;">●</span> Operando' : '<span style="color:#e74c3c;">●</span> Parada'}</div>`;
+            tooltip.innerHTML = `<div style="font-weight:bold; font-size:1.1em; margin-bottom: 8px; color: #3498db; border-bottom: 1px solid #444; padding-bottom: 4px; display: flex; align-items: center; gap: 8px;"> ${ref.nome}</div><div style="color: #ccc; margin-bottom: 8px;">${ref.textoInspecao}</div><div style="font-size: 0.9em; font-weight: bold; color: ${maq.ligada ? '#2ecc71' : '#e74c3c'}">Status: ${maq.ligada ? '<span style="color:#2ecc71;">●</span> Operando' : '<span style="color:#e74c3c;">●</span> Parada'}</div>`;
             tooltip.style.left = (evento.clientX + 15) + "px"; tooltip.style.top = (evento.clientY + 15) + "px"; tooltip.classList.remove("escondido");
         }
     }
@@ -570,7 +585,7 @@ function processarFabrica(deltaTempo) {
 }
 
 // ==========================================
-// 7. RENDERIZAÇÃO E GAME LOOP
+// 7. RENDERIZAÇÃO ANIMADA NO GAME LOOP
 // ==========================================
 
 let contadorFrames = 0;
@@ -603,7 +618,6 @@ app.ticker.add((delta) => {
             const visual = objetosVisuais[c][l];
             visual.barraProgresso.clear();
 
-            // Sombra no Terreno não liberado (Névoa)
             if (terrenoBloqueado[c][l]) {
                 visual.fundo.tint = 0x333333; 
                 let temVizinho = (c > 0 && !terrenoBloqueado[c-1][l]) || (c < COLUNAS-1 && !terrenoBloqueado[c+1][l]) || (l > 0 && !terrenoBloqueado[c][l-1]) || (l < LINHAS-1 && !terrenoBloqueado[c][l+1]);
@@ -615,26 +629,34 @@ app.ticker.add((delta) => {
                 continue; 
             }
 
-            visual.fundo.tint = 0xFFFFFF; // Terreno Claro Liberado
+            visual.fundo.tint = 0xFFFFFF; 
 
             let maquina = mapa[c][l];
             if (maquina) {
-                const textura = PIXI.Texture.from(MAQUINAS[maquina.tipo].imagem);
-                visual.imgSprite.texture = textura;
-                
-                // Força as imagens 64x64 das máquinas a terem um tamanho bom no novo terreno
-               // if (textura.width > 1) { 
-               //     visual.imgSprite.width = 160;   // Aumentado para 160
-               //     visual.imgSprite.height = 160;  // Aumentado para 160
-               // }
-                
-                visual.imgSprite.alpha = maquina.ligada ? 1.0 : 0.4;
-                visual.imgSprite.visible = true; visual.barraFundo.visible = true;
+                const ref = MAQUINAS[maquina.tipo];
+                const baseTex = PIXI.BaseTexture.from(ref.imagem);
+                let texturaFinal;
 
-                const ref = MAQUINAS[maquina.tipo]; let proporcao;
+                // MOTOR DE ANIMAÇÃO DA SPRITE SHEET
+                if (baseTex.valid && ref.framesAnimacao > 1) {
+                    // Troca de frame a cada 150 milissegundos se a máquina estiver operando
+                    let frameIndex = maquina.ligada ? Math.floor(Date.now() / 150) % ref.framesAnimacao : 0;
+                    const corte = new PIXI.Rectangle(frameIndex * ref.frameLargura, 0, ref.frameLargura, ref.frameAltura);
+                    texturaFinal = new PIXI.Texture(baseTex, corte);
+                } else {
+                    // Fallback para imagens estáticas normais
+                    texturaFinal = new PIXI.Texture(baseTex);
+                }
+
+                visual.imgSprite.texture = texturaFinal;
+                visual.imgSprite.alpha = maquina.ligada ? 1.0 : 0.6;
+                visual.imgSprite.visible = true; 
+                visual.barraFundo.visible = true;
+
+                let proporcao;
                 if (ref.geraEnergia) { proporcao = Math.max(maquina.progresso / ref.tempoCiclo, 0); visual.barraProgresso.beginFill(0xf1c40f, 0.8); } 
                 else { proporcao = Math.min(maquina.progresso / ref.tempoCiclo, 1); visual.barraProgresso.beginFill(0x2ecc71, 0.8); }
-                visual.barraProgresso.drawRect(-30, -80, 60 * proporcao, 6); visual.barraProgresso.endFill();
+                visual.barraProgresso.drawRect(-30, -50, 60 * proporcao, 6); visual.barraProgresso.endFill();
             } else { visual.imgSprite.visible = false; visual.barraFundo.visible = false; }
         }
     }

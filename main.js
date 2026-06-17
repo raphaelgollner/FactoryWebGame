@@ -11,7 +11,7 @@ function createWindow () {
         autoHideMenuBar: true, // Esconde aquele menu superior (Arquivo, Editar, etc)
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false // Permitirá usar o sistema de arquivos (fs) no futuro para os saves locais
+            contextIsolation: false 
         }
     });
 
