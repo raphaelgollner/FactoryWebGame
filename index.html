@@ -3,141 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fábrica Idle Incremental</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Idle Factory</title>
+    
+    <script>if (typeof module === 'object') { window.moduleBackup = module; module = undefined; }</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script>if (window.moduleBackup) { module = window.moduleBackup; delete window.moduleBackup; }</script>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <img id="logo-jogo" src="assets/logo.png" alt="Título do Jogo">
+    <div id="tela-titulo">
+        <img src="assets/logo.png" alt="Logo do Jogo" id="logo-menu-principal">
+        <div class="menu-botoes-stacked">
+            <button class="btn-menu-principal" onclick="iniciarNovoJogo()">Novo Jogo</button>
+            <button class="btn-menu-principal" id="btn-menu-carregar" onclick="carregarJogoMenu()">Carregar Jogo</button>
+            <button class="btn-menu-principal" onclick="abrirOpcoes()">Opções</button>
+            <button class="btn-menu-principal" onclick="abrirComoJogar()">Como Jogar</button>
+        </div>
+    </div>
 
-    <div class="jogo-container">
+    <div class="jogo-container escondido" id="jogo-container-id">
 
-        <div class="painel-ui">
+        <div class="coluna-esquerda-combo">
+            <img id="logo-jogo" src="assets/logo.png" alt="Título do Jogo">
             
-            <div id="display-energia">
-                Energia: <span id="texto-energia">0 / 0</span>
-            </div>
-
-            <div class="abas-nav">
-                <button id="aba-btn-construir" class="aba-btn ativo" onclick="mudarAba('construir')">Construir</button>
-                <button id="aba-btn-inventario" class="aba-btn" onclick="mudarAba('inventario')">Inventário</button>
-            </div>
-
-            <div id="aba-construir" class="aba-conteudo ativo">
-                
-                <details class="categoria">
-                    <summary>Ferramentas</summary>
-                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
-                        <button class="btn-maquina" id="btn-ferramenta_remover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_remover')">Remover</button>
-                        <button class="btn-maquina" id="btn-ferramenta_mover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_mover')">Mover</button>
-                    </div>
-                </details>
-
-                <details class="categoria">
-                    <summary>Energia</summary>
-                    <button class="btn-maquina" id="btn-gerador_carvao" onclick="selecionarConstrucao('gerador_carvao')">
-                        <div class="btn-titulo"><img src="assets/coal-generator.png" class="icone-btn">Gerador a Carvão</div>
-                        <div class="btn-info">Custo: 25 <img src="assets/iron-sheet.png" class="icone-texto"> | 25 <img src="assets/copper-sheet.png" class="icone-texto"><br>Energia: +50<br>Ciclo: Consome 15 <img src="assets/coal-ore.png" class="icone-texto">/min</div>
-                    </button>
-                </details>
-
-                <details class="categoria">
-                    <summary>Extração</summary>
-                    <details class="subcategoria">
-                        <summary>Mineradoras</summary>
-                        <button class="btn-maquina" id="btn-mineradora_carvao" onclick="selecionarConstrucao('mineradora_carvao')">
-                            <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Carvão</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/coal-ore.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-mineradora_cobre" onclick="selecionarConstrucao('mineradora_cobre')">
-                            <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Cobre</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/copper-ore.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-mineradora_ferro" onclick="selecionarConstrucao('mineradora_ferro')">
-                            <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Ferro</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/iron-ore.png" class="icone-texto">/min</div>
-                        </button>
-                    </details>
-                </details>
-
-                <details class="categoria">
-                    <summary>Produção</summary>
-                    <details class="subcategoria">
-                        <summary>Fornalhas</summary>
-                        <button class="btn-maquina" id="btn-fornalha_ferro" onclick="selecionarConstrucao('fornalha_ferro')">
-                            <div class="btn-titulo"><img src="assets/smelter.png" class="icone-btn">Fornalha (Ferro)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/iron-ore.png" class="icone-texto"> ➔ 30 <img src="assets/iron-ingot.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-fornalha_cobre" onclick="selecionarConstrucao('fornalha_cobre')">
-                            <div class="btn-titulo"><img src="assets/smelter.png" class="icone-btn">Fornalha (Cobre)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/copper-ore.png" class="icone-texto"> ➔ 30 <img src="assets/copper-ingot.png" class="icone-texto">/min</div>
-                        </button>
-                    </details>
-
-                    <details class="subcategoria">
-                        <summary>Fundição</summary>
-                        <button class="btn-maquina trancado" id="btn-fundicao_aco" onclick="selecionarConstrucao('fundicao_aco')">
-                            <div class="btn-titulo"><img src="assets/fundicao.png" class="icone-btn">Fundição (Aço)</div>
-                            <div class="btn-info">Custo: 20 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -10<br>Ciclo: 15 <img src="assets/iron-ore.png" class="icone-texto"> + 15 <img src="assets/coal-ore.png" class="icone-texto"> ➔ 30 <img src="assets/steel-ingot.png" class="icone-texto">/min</div>
-                        </button>
-                    </details>
-
-                    <details class="subcategoria">
-                        <summary>Montadoras</summary>
-                        <button class="btn-maquina" id="btn-montadora_ferro" onclick="selecionarConstrucao('montadora_ferro')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Ferro)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/iron-sheet.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-montadora_barra" onclick="selecionarConstrucao('montadora_barra')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Barra Ferro)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/iron-rod.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina trancado" id="btn-montadora_parafuso" onclick="selecionarConstrucao('montadora_parafuso')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Parafusos)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/screws.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-montadora_cobre" onclick="selecionarConstrucao('montadora_cobre')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Cobre)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/copper-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/copper-sheet.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina" id="btn-montadora_fio" onclick="selecionarConstrucao('montadora_fio')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Fio Cobre)</div>
-                            <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/copper-ingot.png" class="icone-texto"> ➔ 15 <img src="assets/copper-wire.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina trancado" id="btn-montadora_cabo" onclick="selecionarConstrucao('montadora_cabo')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Cabo Elétrico)</div>
-                            <div class="btn-info">Custo: 15 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 60 <img src="assets/copper-wire.png" class="icone-texto"> ➔ 30 <img src="assets/cable.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina trancado" id="btn-montadora_aco" onclick="selecionarConstrucao('montadora_aco')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Aço)</div>
-                            <div class="btn-info">Custo: 15 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/steel-ingot.png" class="icone-texto"> ➔ 15 <img src="assets/steel-sheet.png" class="icone-texto">/min</div>
-                        </button>
-                        <button class="btn-maquina trancado" id="btn-montadora_reforcada" onclick="selecionarConstrucao('montadora_reforcada')">
-                            <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Reforçada)</div>
-                            <div class="btn-info">Custo: 20 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 60 <img src="assets/screws.png" class="icone-texto"> + 30 <img src="assets/iron-sheet.png" class="icone-texto"> ➔ 5 <img src="assets/reinforced-sheet.png" class="icone-texto">/min</div>
-                        </button>
-                    </details>
-                </details>
-
-                <p class="dica">Dir: Limpar Mão</p>
-
-                <div class="controles-sanfona">
-                    <button class="btn-sanfona" onclick="expandirTudo()">▼ Expandir Tudo</button>
-                    <button class="btn-sanfona" onclick="recolherTudo()">▲ Recolher Tudo</button>
+            <div class="painel-ui">
+                <div id="display-energia">
+                    Energia: <span id="texto-energia">0 / 0</span>
                 </div>
 
-            </div>
+                <div class="abas-nav">
+                    <button id="aba-btn-construir" class="aba-btn ativo" onclick="mudarAba('construir')">Construir</button>
+                    <button id="aba-btn-inventario" class="aba-btn" onclick="mudarAba('inventario')">Inventário</button>
+                </div>
 
-            <div id="aba-inventario" class="aba-conteudo">
-                <div id="lista-inventario"></div>
+                <div id="aba-construir" class="aba-conteudo ativo">
+                    
+                    <details class="categoria">
+                        <summary>Ferramentas</summary>
+                        <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                            <button class="btn-maquina" id="btn-ferramenta_remover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_remover')">Remover</button>
+                            <button class="btn-maquina" id="btn-ferramenta_mover" style="text-align: center;" onclick="selecionarConstrucao('ferramenta_mover')">Mover</button>
+                        </div>
+                    </details>
+
+                    <details class="categoria">
+                        <summary>Energia</summary>
+                        <button class="btn-maquina" id="btn-gerador_carvao" onclick="selecionarConstrucao('gerador_carvao')">
+                            <div class="btn-titulo"><img src="assets/coal-generator.png" class="icone-btn">Gerador a Carvão</div>
+                            <div class="btn-info">Custo: 25 <img src="assets/iron-sheet.png" class="icone-texto"> | 25 <img src="assets/copper-sheet.png" class="icone-texto"><br>Energia: +50<br>Ciclo: Consome 15 <img src="assets/coal-ore.png" class="icone-texto">/min</div>
+                        </button>
+                    </details>
+
+                    <details class="categoria">
+                        <summary>Extração</summary>
+                        <details class="subcategoria">
+                            <summary>Mineradoras</summary>
+                            <button class="btn-maquina" id="btn-mineradora_carvao" onclick="selecionarConstrucao('mineradora_carvao')">
+                                <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Carvão</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/coal-ore.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-mineradora_cobre" onclick="selecionarConstrucao('mineradora_cobre')">
+                                <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Cobre</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/copper-ore.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-mineradora_ferro" onclick="selecionarConstrucao('mineradora_ferro')">
+                                <div class="btn-titulo"><img src="assets/miner.png" class="icone-btn">Min. de Ferro</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: Produz 60 <img src="assets/iron-ore.png" class="icone-texto">/min</div>
+                            </button>
+                        </details>
+                    </details>
+
+                    <details class="categoria">
+                        <summary>Produção</summary>
+                        <details class="subcategoria">
+                            <summary>Fornalhas</summary>
+                            <button class="btn-maquina" id="btn-fornalha_ferro" onclick="selecionarConstrucao('fornalha_ferro')">
+                                <div class="btn-titulo"><img src="assets/smelter.png" class="icone-btn">Fornalha (Ferro)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/iron-ore.png" class="icone-texto"> ➔ 30 <img src="assets/iron-ingot.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-fornalha_cobre" onclick="selecionarConstrucao('fornalha_cobre')">
+                                <div class="btn-titulo"><img src="assets/smelter.png" class="icone-btn">Fornalha (Cobre)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/copper-ore.png" class="icone-texto"> ➔ 30 <img src="assets/copper-ingot.png" class="icone-texto">/min</div>
+                            </button>
+                        </details>
+
+                        <details class="subcategoria">
+                            <summary>Fundição</summary>
+                            <button class="btn-maquina trancado" id="btn-fundicao_aco" onclick="selecionarConstrucao('fundicao_aco')">
+                                <div class="btn-titulo"><img src="assets/fundicao.png" class="icone-btn">Fundição (Aço)</div>
+                                <div class="btn-info">Custo: 20 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -10<br>Ciclo: 15 <img src="assets/iron-ore.png" class="icone-texto"> + 15 <img src="assets/coal-ore.png" class="icone-texto"> ➔ 30 <img src="assets/steel-ingot.png" class="icone-texto">/min</div>
+                            </button>
+                        </details>
+
+                        <details class="subcategoria">
+                            <summary>Montadoras</summary>
+                            <button class="btn-maquina" id="btn-montadora_ferro" onclick="selecionarConstrucao('montadora_ferro')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Ferro)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/iron-sheet.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-montadora_barra" onclick="selecionarConstrucao('montadora_barra')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Barra Ferro)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/iron-rod.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina trancado" id="btn-montadora_parafuso" onclick="selecionarConstrucao('montadora_parafuso')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Parafusos)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/iron-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/screws.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-montadora_cobre" onclick="selecionarConstrucao('montadora_cobre')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Cobre)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/copper-ingot.png" class="icone-texto"> ➔ 30 <img src="assets/copper-sheet.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina" id="btn-montadora_fio" onclick="selecionarConstrucao('montadora_fio')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Fio Cobre)</div>
+                                <div class="btn-info">Custo: 10 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 15 <img src="assets/copper-ingot.png" class="icone-texto"> ➔ 15 <img src="assets/copper-wire.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina trancado" id="btn-montadora_cabo" onclick="selecionarConstrucao('montadora_cabo')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Cabo Elétrico)</div>
+                                <div class="btn-info">Custo: 15 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 60 <img src="assets/copper-wire.png" class="icone-texto"> ➔ 30 <img src="assets/cable.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina trancado" id="btn-montadora_aco" onclick="selecionarConstrucao('montadora_aco')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Chapa Aço)</div>
+                                <div class="btn-info">Custo: 15 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 30 <img src="assets/steel-ingot.png" class="icone-texto"> ➔ 15 <img src="assets/steel-sheet.png" class="icone-texto">/min</div>
+                            </button>
+                            <button class="btn-maquina trancado" id="btn-montadora_reforcada" onclick="selecionarConstrucao('montadora_reforcada')">
+                                <div class="btn-titulo"><img src="assets/montadora.png" class="icone-btn">Mont. (Reforçada)</div>
+                                <div class="btn-info">Custo: 20 <img src="assets/iron-sheet.png" class="icone-texto"> | Energia: -5<br>Ciclo: 60 <img src="assets/screws.png" class="icone-texto"> + 30 <img src="assets/iron-sheet.png" class="icone-texto"> ➔ 5 <img src="assets/reinforced-sheet.png" class="icone-texto">/min</div>
+                            </button>
+                        </details>
+                    </details>
+
+                    <p class="dica">Dir: Limpar Mão</p>
+
+                    <div class="controles-sanfona">
+                        <button class="btn-sanfona" onclick="expandirTudo()">▼ Expandir Tudo</button>
+                        <button class="btn-sanfona" onclick="recolherTudo()">▲ Recolher Tudo</button>
+                    </div>
+
+                </div>
+
+                <div id="aba-inventario" class="aba-conteudo">
+                    <div id="lista-inventario"></div>
+                </div>
             </div>
         </div>
 
-        <canvas id="telaDoJogo" width="600" height="600"></canvas>
+        <canvas id="telaDoJogo" width="720" height="720"></canvas>
 
-        <div class="painel-ui">
-            
+        <div class="painel-ui painel-direito">
             <div class="botoes-topo-direita">
                 <button class="btn-quadrado" title="Sistema" onclick="abrirSistema()">
                     <img src="assets/icon-sistema.png" alt="Sistema" class="icone-btn-quadrado">
@@ -289,18 +303,31 @@
 
     <div id="modal-sistema" class="escondido">
         <button class="btn-fechar-modal" onclick="fecharSistema()">Fechar</button>
-        <h1>Sistema</h1>
+        <h1 id="titulo-modal-sistema">Menu do Jogo</h1>
         
         <div class="menu-sistema-flex">
-            <button class="btn-venda destaque-pesquisa" style="background-color: #3498db; border-color: #2980b9;" onclick="salvarJogo()">Salvar Jogo</button>
-            <button class="btn-venda destaque-pesquisa" style="background-color: #2ecc71; border-color: #27ae60;" onclick="carregarJogo()">Carregar Save</button>
-            <button class="btn-venda destaque-pesquisa" style="background-color: #e74c3c; border-color: #c0392b;" onclick="resetarJogo()">Apagar Save</button>
-            
-            <hr style="width: 100%; border-color: #555; margin: 15px 0;">
+            <div id="grupo-botoes-save-interno" class="width-100-flex">
+                <button class="btn-venda destaque-pesquisa" style="background-color: #3498db; border-color: #2980b9;" onclick="salvarJogo()">Salvar Jogo</button>
+                <button class="btn-venda destaque-pesquisa" style="background-color: #f39c12; border-color: #d68910; color: #fff;" onclick="voltarAoMenu()">Salvar e Voltar ao Menu</button>
+                <button class="btn-venda destaque-pesquisa" style="background-color: #e74c3c; border-color: #c0392b;" onclick="resetarJogo()">Apagar Save Físico</button>
+                
+                <hr style="width: 100%; border-color: #555; margin: 15px 0;">
+            </div>
             
             <div class="controle-volume">
                 <label for="volume-musica" style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: block;">Volume</label>
                 <input type="range" id="volume-musica" min="0" max="100" value="50" style="width: 100%; cursor: pointer;">
+            </div>
+
+            <hr style="width: 100%; border-color: #555; margin: 15px 0;">
+
+            <div class="controle-volume">
+                <label for="select-resolucao" style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px; display: block;">Resolução (Escala)</label>
+                <select id="select-resolucao" onchange="mudarEscalaJanela(this.value)">
+                    <option value="0.8">Compacto (80%)</option>
+                    <option value="1.0" selected>Padrão (100%)</option>
+                    <option value="1.2">Expandido (120%)</option>
+                </select>
             </div>
         </div>
     </div>

@@ -1,4 +1,23 @@
 // ==========================================
+// 0. CONFIGURAÇÃO DE AMBIENTE DESKTOP (FS)
+// ==========================================
+let fs = null;
+let path = null;
+let caminhoDoSave = "";
+let jogoIniciadoAtivo = false;
+
+try {
+    if (typeof require !== 'undefined') {
+        fs = require('fs');
+        path = require('path');
+        const os = require('os');
+        caminhoDoSave = path.join(os.homedir(), 'save_idle_factory.json');
+    }
+} catch (e) {
+    console.log("Rodando via Navegador. Salvamento alternado para o LocalStorage.");
+}
+
+// ==========================================
 // 1. TEMPLATES E DADOS
 // ==========================================
 
@@ -19,7 +38,7 @@ const ITENS = {
     chapa_reforcada: { nome: "Chapa Reforçada", imagem: "assets/reinforced-sheet.png" }
 };
 
-let inventario = {
+const INVENTARIO_INICIAL = {
     pesquisa_verde: 0, pesquisa_vermelha: 0,
     carvao: 50, minerio_ferro: 0, minerio_cobre: 0, 
     lingote_ferro: 0, lingote_cobre: 0, lingote_aco: 0,
@@ -27,6 +46,8 @@ let inventario = {
     barra_ferro: 0, parafuso: 0, fio_cobre: 0,
     cabo_eletrico: 0, chapa_reforcada: 0
 };
+
+let inventario = { ...INVENTARIO_INICIAL };
 
 const PRECOS_PESQUISA = { 
     chapa_ferro: { tipo: 'verde', valor: 1 }, 
@@ -79,18 +100,26 @@ const LAYOUT_ARVORE = [
     ["chapa_reforcada"]   
 ];
 
-function abrirArvore() {
-    document.getElementById("modal-arvore").classList.remove("escondido");
-    renderizarArvore();
-}
+function abrirArvore() { document.getElementById("modal-arvore").classList.remove("escondido"); renderizarArvore(); }
 function fecharArvore() { document.getElementById("modal-arvore").classList.add("escondido"); }
-
 function abrirComoJogar() { document.getElementById("modal-como-jogar").classList.remove("escondido"); }
 function fecharComoJogar() { document.getElementById("modal-como-jogar").classList.add("escondido"); }
 
-// NOVO: Funções do modal Sistema
-function abrirSistema() { document.getElementById("modal-sistema").classList.remove("escondido"); }
+function abrirSistema() { 
+    document.getElementById("titulo-modal-sistema").innerText = "Sistema";
+    document.getElementById("grupo-botoes-save-interno").classList.remove("escondido");
+    document.getElementById("modal-sistema").classList.remove("escondido"); 
+}
+function abrirOpcoes() {
+    document.getElementById("titulo-modal-sistema").innerText = "Opções do Jogo";
+    document.getElementById("grupo-botoes-save-interno").classList.add("escondido");
+    document.getElementById("modal-sistema").classList.remove("escondido");
+}
 function fecharSistema() { document.getElementById("modal-sistema").classList.add("escondido"); }
+
+function mudarEscalaJanela(fator) {
+    document.body.style.zoom = fator;
+}
 
 function renderizarArvore() {
     const container = document.getElementById("container-arvore-nodes");
@@ -153,8 +182,56 @@ function comprarTecnologia(id) {
 }
 
 // ==========================================
-// 3. SISTEMA DE UI
+// 3. SISTEMA DE UI E TRANSICÃO DE TELAS
 // ==========================================
+
+function entrarNaFabrica() {
+    jogoIniciadoAtivo = true;
+    document.getElementById("tela-titulo").classList.add("escondido");
+    document.getElementById("jogo-container-id").classList.remove("escondido");
+    atualizarInterfaceDOM(true);
+}
+
+function voltarAoMenu() {
+    salvarJogo(true);
+    jogoIniciadoAtivo = false;
+    document.getElementById("modal-sistema").classList.add("escondido");
+    document.getElementById("jogo-container-id").classList.add("escondido");
+    document.getElementById("tela-titulo").classList.remove("escondido");
+    
+    const btnCarregar = document.getElementById("btn-menu-carregar");
+    if (btnCarregar) btnCarregar.disabled = !verificarSeExisteSave();
+}
+
+function iniciarNovoJogo() {
+    if (confirm("Deseja iniciar uma nova fábrica? Isso resetará o progresso atual não salvo.")) {
+        inventario = JSON.parse(JSON.stringify(INVENTARIO_INICIAL));
+        for (const key of Object.keys(ARVORE_PESQUISA)) {
+            ARVORE_PESQUISA[key].comprada = false;
+            ARVORE_PESQUISA[key].destravaDOM.forEach(idDOM => {
+                const elemento = document.getElementById(idDOM);
+                if (elemento) elemento.classList.add("trancado");
+            });
+        }
+        for (let c = 0; c < COLUNAS; c++) {
+            for (let l = 0; l < LINHAS; l++) { 
+                mapa[c][l] = null; 
+                // Centraliza a área inicial 3x3 no novo grid 12x12
+                if (c >= 5 && c <= 7 && l >= 5 && l <= 7) { terrenoBloqueado[c][l] = false; } else { terrenoBloqueado[c][l] = true; }
+            }
+        }
+        entrarNaFabrica();
+        mostrarNotificacao("Nova fábrica inicializada!", "sucesso");
+    }
+}
+
+function carregarJogoMenu() {
+    let sucesso = carregarJogo(true);
+    if (sucesso) {
+        entrarNaFabrica();
+        mostrarNotificacao("Save carregado com sucesso!", "sucesso");
+    }
+}
 
 function expandirTudo() { document.querySelectorAll('#aba-construir details').forEach(det => det.open = true); }
 function recolherTudo() { document.querySelectorAll('#aba-construir details').forEach(det => det.open = false); }
@@ -185,6 +262,13 @@ function gerarPesquisa(item_id, quantity) {
     } else { mostrarNotificacao(`Faltam itens!`); }
 }
 
+function verificarSeExisteSave() {
+    if (fs && caminhoDoSave) {
+        return fs.existsSync(caminhoDoSave);
+    }
+    return localStorage.getItem('meu_save_fabrica_final') !== null;
+}
+
 function salvarJogo(silencioso = false) {
     const dadosSave = { inventario: inventario, terreno: terrenoBloqueado, arvore: {}, mapa: [] };
     for (const [key, tech] of Object.entries(ARVORE_PESQUISA)) { dadosSave.arvore[key] = tech.comprada; }
@@ -196,13 +280,28 @@ function salvarJogo(silencioso = false) {
             else { dadosSave.mapa[c][l] = null; }
         }
     }
-    localStorage.setItem('meu_save_fabrica_final', JSON.stringify(dadosSave));
-    if(!silencioso) { mostrarNotificacao("Progresso Salvo!", "sucesso"); }
+
+    if (fs && caminhoDoSave) {
+        fs.writeFileSync(caminhoDoSave, JSON.stringify(dadosSave, null, 4), 'utf-8');
+    } else {
+        localStorage.setItem('meu_save_fabrica_final', JSON.stringify(dadosSave));
+    }
+
+    if(!silencioso) { mostrarNotificacao("Fábrica salva localmente!", "sucesso"); }
 }
 
 function carregarJogo(silencioso = false) {
-    const saveStr = localStorage.getItem('meu_save_fabrica_final');
-    if (!saveStr) { if(!silencioso) mostrarNotificacao("Nenhum save encontrado!"); return; }
+    let saveStr = null;
+
+    if (fs && caminhoDoSave) {
+        if (fs.existsSync(caminhoDoSave)) {
+            saveStr = fs.readFileSync(caminhoDoSave, 'utf-8');
+        }
+    } else {
+        saveStr = localStorage.getItem('meu_save_fabrica_final');
+    }
+
+    if (!saveStr) { if(!silencioso) mostrarNotificacao("Nenhum arquivo de save encontrado!"); return false; }
     
     try {
         const dadosSave = JSON.parse(saveStr);
@@ -232,19 +331,30 @@ function carregarJogo(silencioso = false) {
             }
         }
         if (!document.getElementById("modal-arvore").classList.contains("escondido")) { renderizarArvore(); }
-        if(!silencioso) mostrarNotificacao("Progresso Carregado!", "sucesso");
+        if(!silencioso) mostrarNotificacao("Progresso Restaurado!", "sucesso");
+        return true;
     } catch(e) {
-        mostrarNotificacao("Erro: Save antigo. Resete o jogo.");
+        mostrarNotificacao("Erro: Arquivo corrompido ou antigo. Resete.");
+        return false;
     }
 }
 
-function resetarJogo() { if(confirm("Apagar todo o save?")) { localStorage.removeItem('meu_save_fabrica_final'); location.reload(); } }
+function resetarJogo() { 
+    if(confirm("Apagar permanentemente o arquivo físico de save do computador?")) { 
+        if (fs && caminhoDoSave && fs.existsSync(caminhoDoSave)) {
+            fs.unlinkSync(caminhoDoSave);
+        } else {
+            localStorage.removeItem('meu_save_fabrica_final');
+        }
+        location.reload(); 
+    } 
+}
 
 // ==========================================
 // 4. INICIANDO O PIXIJS E A GRADE
 // ==========================================
 
-const TAMANHO_CELULA = 60; const COLUNAS = 10; const LINHAS = 10;
+const TAMANHO_CELULA = 60; const COLUNAS = 12; const LINHAS = 12; 
 
 const app = new PIXI.Application({
     view: document.getElementById("telaDoJogo"),
@@ -261,7 +371,7 @@ for (let c = 0; c < COLUNAS; c++) {
     mapa[c] = []; terrenoBloqueado[c] = []; objetosVisuais[c] = [];
     for (let l = 0; l < LINHAS; l++) { 
         mapa[c][l] = null; 
-        if (c >= 3 && c <= 5 && l >= 3 && l <= 5) { terrenoBloqueado[c][l] = false; } else { terrenoBloqueado[c][l] = true; }
+        if (c >= 5 && c <= 7 && l >= 5 && l <= 7) { terrenoBloqueado[c][l] = false; } else { terrenoBloqueado[c][l] = true; }
 
         const blocoContainer = new PIXI.Container();
         blocoContainer.x = c * TAMANHO_CELULA; blocoContainer.y = l * TAMANHO_CELULA;
@@ -346,6 +456,7 @@ class Maquina {
 }
 
 function processarFabrica(deltaTempo) {
+    if (!jogoIniciadoAtivo) return; 
     energiaGerada = 0; energiaConsumida = 0; let maquinasAtivas = [];
     for (let c = 0; c < COLUNAS; c++) { for (let l = 0; l < LINHAS; l++) { if (mapa[c][l]) maquinasAtivas.push(mapa[c][l]); } }
     maquinasAtivas.forEach(m => { if (MAQUINAS[m.tipo].geraEnergia) { m.atualizarGerador(deltaTempo); if (m.ligada) energiaGerada += MAQUINAS[m.tipo].geraEnergia; } });
@@ -368,14 +479,22 @@ canvasDOM.addEventListener("contextmenu", evento => evento.preventDefault());
 canvasDOM.addEventListener("mousedown", (evento) => {
     if (!document.getElementById("modal-arvore").classList.contains("escondido")) return;
     if (!document.getElementById("modal-como-jogar").classList.contains("escondido")) return;
-    if (!document.getElementById("modal-sistema").classList.contains("escondido")) return; // NOVO: Bloqueia grade com sistema aberto
+    if (!document.getElementById("modal-sistema").classList.contains("escondido")) return; 
 
     const rect = canvasDOM.getBoundingClientRect();
-    const col = Math.floor((evento.clientX - rect.left) / TAMANHO_CELULA);
-    const lin = Math.floor((evento.clientY - rect.top) / TAMANHO_CELULA);
-    const tooltip = document.getElementById("tooltip-maquina");
+    const scaleX = canvasDOM.width / rect.width;
+    const scaleY = canvasDOM.height / rect.height;
 
+    const x = (evento.clientX - rect.left) * scaleX;
+    const y = (evento.clientY - rect.top) * scaleY;
+
+    const col = Math.floor(x / TAMANHO_CELULA);
+    const lin = Math.floor(y / TAMANHO_CELULA);
+    
+    const tooltip = document.getElementById("tooltip-maquina");
     tooltip.classList.add("escondido");
+
+    if (col < 0 || col >= COLUNAS || lin < 0 || lin >= LINHAS) return;
 
     if (evento.button === 2) {
         if (maquinaNaMao) { 
@@ -444,8 +563,9 @@ canvasDOM.addEventListener("mousedown", (evento) => {
 });
 
 let contadorFrames = 0;
-function atualizarInterfaceDOM() {
-    contadorFrames++; if (contadorFrames % 10 !== 0) return; 
+function atualizarInterfaceDOM(forcar = false) {
+    if (!jogoIniciadoAtivo && !forcar) return;
+    contadorFrames++; if (contadorFrames % 10 !== 0 && !forcar) return; 
     const spanEnergia = document.getElementById("texto-energia");
     spanEnergia.innerText = `${energiaConsumida} / ${energiaGerada}`;
     spanEnergia.style.color = (energiaConsumida > 0 && energiaConsumida >= energiaGerada) ? "#e74c3c" : "#000";
@@ -453,11 +573,11 @@ function atualizarInterfaceDOM() {
     document.getElementById("texto-pesq-vermelha").innerText = inventario.pesquisa_vermelha;
 
     const div = document.getElementById("lista-inventario"); div.innerHTML = "";
-    for (const [id_item, quantidade] of Object.entries(inventario)) {
+    for (const [id_item, quantity] of Object.entries(inventario)) {
         if (id_item.includes("pesquisa")) continue; 
-        if (quantidade > 0 || ITENS[id_item].inicial) {
+        if (quantity > 0 || ITENS[id_item] && ITENS[id_item].inicial) {
             const info = ITENS[id_item];
-            div.innerHTML += `<div class="item-linha"><img src="${info.imagem}" class="icone-inv"><span>${info.nome}: <strong>${quantidade}</strong></span></div>`;
+            div.innerHTML += `<div class="item-linha"><img src="${info.imagem}" class="icone-inv"><span>${info.nome}: <strong>${quantity}</strong></span></div>`;
         }
     }
 }
@@ -467,6 +587,7 @@ function atualizarInterfaceDOM() {
 // ==========================================
 
 app.ticker.add((delta) => {
+    if (!jogoIniciadoAtivo) return; 
     const deltaTempo = app.ticker.deltaMS; 
     processarFabrica(deltaTempo);
 
@@ -526,8 +647,11 @@ app.ticker.add((delta) => {
     atualizarInterfaceDOM();
 });
 
-setInterval(() => { salvarJogo(true); }, 30000);
+setInterval(() => { if (jogoIniciadoAtivo) salvarJogo(true); }, 30000);
 
 window.onload = () => { 
-    if (localStorage.getItem('meu_save_fabrica_final')) { carregarJogo(true); } 
+    const btnCarregar = document.getElementById("btn-menu-carregar");
+    if (btnCarregar) {
+        btnCarregar.disabled = !verificarSeExisteSave();
+    }
 };
