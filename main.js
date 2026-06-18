@@ -1,36 +1,40 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain } = require('electron');
 
-function createWindow () {
-    // Cria a janela do navegador
-    const win = new BrowserWindow({
+let mainWindow;
+
+app.whenReady().then(() => {
+    mainWindow = new BrowserWindow({
         width: 1280,
-        height: 800,
-        title: "Fábrica Idle Incremental",
-        icon: path.join(__dirname, 'assets', 'logo.png'), // Usa sua logo como ícone da janela
-        autoHideMenuBar: true, // Esconde aquele menu superior (Arquivo, Editar, etc)
+        height: 720,
+        center: true,
+        autoHideMenuBar: true, // Esconde a barra de menus do Windows
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false 
+            contextIsolation: false
         }
     });
 
-    // Carrega o seu arquivo HTML principal
-    win.loadFile('index.html');
-}
-
-// Quando o Electron estiver pronto, abra a janela
-app.whenReady().then(createWindow);
-
-// Fecha o processo quando todas as janelas forem fechadas (padrão de Windows)
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+    mainWindow.loadFile('index.html');
 });
 
-app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
+// Ouve os pedidos do seu game.js para alterar o vídeo
+ipcMain.on('toggle-fullscreen', () => {
+    const isFull = mainWindow.isFullScreen();
+    mainWindow.setFullScreen(!isFull);
+});
+
+ipcMain.on('resize-window', (event, w, h) => {
+    if (mainWindow.isFullScreen()) {
+        mainWindow.setFullScreen(false);
     }
+    mainWindow.setSize(w, h);
+    mainWindow.center();
+});
+
+ipcMain.on('exit-game', () => {
+    app.quit();
+});
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
 });
